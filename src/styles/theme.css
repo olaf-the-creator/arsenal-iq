@@ -1,0 +1,99 @@
+/* Theme tokens. */
+:root {
+  --color-white: #ffffff;
+  --color-scarlet: #ab0003; /* dominant: energy and primary accents */
+  --color-navy: #14225a; /* secondary: outlines, roundel borders, caps */
+
+  --color-text: #1b1f2a;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-row-hover: #f6f7fa;
+  --color-header-bg: #f0f1f4; /* very light grey group header rows */
+  --color-card-bg: #fafafb; /* glossary / stat cards */
+
+  --font-sans: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --header-height: 64px;
+  --ui-zoom: 1; /* scaled per screen size below; viewport-height math divides by it */
+}
+
+/* Screen-size tiers. The page is designed at 100% for large desktop monitors; on
+   smaller screens the whole UI scales down (CSS zoom) instead of re-tuning ~150
+   hard-coded sizes. Phones (<= 640px) keep their own condensed layouts at 100%.
+   Media queries use real viewport pixels, so the tiers stay put.
+     large   >= 1800px   100%   external monitors
+     medium  1280-1799   80%    13-16" laptops (matches the author's 80% browser zoom)
+     small   641-1279    90%    iPads and small windows */
+@media (min-width: 641px) and (max-width: 1279px) {
+  :root {
+    --ui-zoom: 0.9;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1799px) {
+  :root {
+    --ui-zoom: 0.8;
+  }
+}
+
+html {
+  zoom: var(--ui-zoom);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%; /* phones keep our sizes when rotated */
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1 {
+  margin: 8px 0 32px;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+button {
+  font: inherit;
+  touch-action: manipulation; /* no double-tap-zoom delay on controls */
+}
+
+/* Phones: smaller page titles; 16px inputs so iOS Safari doesn't zoom on focus. */
+@media (max-width: 640px) {
+  h1 {
+    margin: 4px 0 20px;
+    font-size: 30px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* 20-80 grade chip, as in the arsenal table; colored inline with gradeColor(). */
+.gchip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 1px;
+  font-variant-numeric: tabular-nums;
+}

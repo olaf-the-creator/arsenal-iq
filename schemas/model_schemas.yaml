@@ -1,0 +1,80 @@
+# ─────────────────────────────────────────────────────────────
+# Pitch Quality Model Feature Schema  (FanGraphs Stuff+ family)
+# Grain: one row per pitch. Scale: 100 = avg, 10 pts = 1 SD (pitch level)
+# Source: FanGraphs primer (Mar 2023) only. Non-low-risk assumptions are NOT
+# adopted; see docs/ASSUMPTIONS.md (IDs A-xx) for gaps to validate with SMEs.
+# ─────────────────────────────────────────────────────────────
+
+shared_enums:
+  pitch_type: [FF, SI, FC, SL, CU, KC, CH, FS]   # primer's 8 types; sweeper not split (A-10)
+  hand: [L, R]
+  count: { balls: "int[0..3]", strikes: "int[0..2]" } # 12 states
+
+# ═════════════════════════════════════════════════════════════
+StuffPlus:
+  version: v1 (2023 primer)
+  algorithm: decision-tree-based, trained against pitch run values  # DOC
+  excludes: [plate_location, count, batter_hand]                 # DOC
+  features:   # primer: "include, but are not limited to" (list not exhaustive)
+    # ── Velocity ──
+    release_speed:        { type: float, unit: mph,  src: DOC }
+    # ── Movement ──
+    induced_vert_break:   { type: float, unit: in,   src: DOC }
+    horz_break:           { type: float, unit: in,   src: DOC }
+    # ── Spin ──
+    spin_rate:            { type: float, unit: rpm,  src: DOC }
+    axis_differential:    { type: float, unit: deg,  src: DOC,
+                            desc: "observed spin axis − spin-inferred axis; proxy for seam-shifted wake" }
+    # ── Release ──
+    release_pos_x:        { type: float, unit: ft,   src: DOC }
+    release_pos_z:        { type: float, unit: ft,   src: DOC }
+    # ── Arsenal-relative (vs. primary fastball, by usage per outing) ──
+    primary_fb_ref:       { type: fk(pitch_type), src: DOC, desc: "most-used FB in that outing" }
+    velo_diff_vs_fb:      { type: float, unit: mph,  src: DOC, applies_to: secondaries }
+    ivb_diff_vs_fb:       { type: float, unit: in,   src: DOC, applies_to: secondaries }
+    hb_diff_vs_fb:        { type: float, unit: in,   src: DOC, applies_to: secondaries }
+    # ── Emergent (not explicit inputs) ──
+    vertical_approach_angle: { src: DOC, status: NOT_A_FEATURE,
+                               desc: "primer: vertical attack angle captured via release × movement interaction" }
+    deception:               { src: DOC, status: NOT_A_FEATURE,
+                               desc: "emerges from unusual release + movement combos" }
+    # ── Context ──
+    pitcher_hand:         { type: enum(hand), src: INFERRED, note: "low risk; A-07" }
+    pitch_type:           { type: enum(pitch_type), src: DOC, desc: "outputs normed per type" }
+  stability: { reliable_at_pitches: 80, yoy_stickiness: high }    # DOC
+
+# ═════════════════════════════════════════════════════════════
+LocationPlus:
+  algorithm: count- and pitch-type-conditioned location value     # DOC
+  excludes: [velocity, movement, spin, release, any physical char]  # DOC
+  intent_data: none   # stringer command data tested, added no predictive value (DOC)
+  features:
+    plate_x:              { type: float, unit: ft, src: DOC }
+    plate_z:              { type: float, unit: ft, src: DOC }
+    balls:                { type: int,   src: DOC }
+    strikes:              { type: int,   src: DOC }
+    pitch_type:           { type: enum(pitch_type), src: DOC, desc: "centered at 100 per type" }
+    # pitcher/batter handedness NOT adopted: primer does not list it for Location+ (A-08)
+  stability: { reliable_at_pitches: "~400", yoy_stickiness: low }   # DOC
+
+# ═════════════════════════════════════════════════════════════
+PitchingPlus:
+  algorithm: separate third model; NOT a weighted avg of Stuff+/Location+  # DOC
+  features:
+    inherits: StuffPlus.features      # all physical characteristics (DOC)
+    plus:
+      plate_x:            { src: DOC }
+      plate_z:            { src: DOC }
+      balls:              { src: DOC }
+      strikes:            { src: DOC }
+      batter_hand:        { type: enum(hand), src: DOC,
+                            desc: "captures platoon effects on movement & location" }
+  stability: { yoy_stickiness: "driven mostly by Stuff+" }        # DOC
+
+# ═════════════════════════════════════════════════════════════
+target: pitch-level run value   # DOC
+
+aggregate_spread:   # pitcher-level SD (v1 primer); currency unverified (A-11)
+  StuffPlus:    { SP: 12.16, RP: 17.02 }
+  LocationPlus: { SP: 3.34,  RP: 5.87 }
+  PitchingPlus: { SP: 4.94,  RP: 6.61 }
