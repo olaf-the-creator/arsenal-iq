@@ -1,5 +1,17 @@
 # Arsenal IQ
 
+## Live demo
+
+**Try it here: [www.olafschweinsberg.com/arsenal-iq](https://www.olafschweinsberg.com/arsenal-iq/)**
+
+It runs in any modern browser, on desktop or phone. No sign-up or install is needed.
+
+<p align="center">
+  <a href="https://www.olafschweinsberg.com/arsenal-iq/">
+    <img src="docs/screenshot.png" alt="Arsenal IQ landing page: a ranked table of Nationals pitchers with Stuff+, Location+, Pitching+ and 20-80 grade columns" width="900">
+  </a>
+</p>
+
 An experimental hobby project: a Vue 3 + Vite mockup of a pitching-analytics app for a baseball front office. I built it for a Washington Nationals job application.
 
 **This project is not affiliated with, endorsed by or connected to MLB or the Washington Nationals.** Team names and player names belong to their owners and appear for illustration only. The logos in this repo are placeholders.
